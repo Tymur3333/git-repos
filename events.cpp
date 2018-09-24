@@ -1,3 +1,4 @@
+// ConsoleApplication2.cpp: определяет точку входа для консольного приложения.
 // events1.2.cpp: определяет точку входа для консольного приложения.
 
 
@@ -6,6 +7,7 @@
 #include <time.h>
 #include <iomanip> // функция setw() - задает отступ
 #include <stdio.h>
+#include <string>
 
 using namespace std;
 
@@ -18,8 +20,8 @@ const char *colors[] = { "Blue", "Red", "Green", "Yellow" };
 
 struct SportAttribute
 {
-	const char *attribute;
-	const char *color;
+	char *attribute;
+	char *color;
 	unsigned int id;
 };
 
@@ -31,7 +33,7 @@ void PrintSportAttributes(int a, int b, SportAttribute* pSA)
 {
 	for (int i = a; i <= b; ++i)
 	{
-		cout << i << " " << pSA[i].attribute << " " << pSA[i].color << " " << pSA[i].id  << endl;
+		cout << i << " " << pSA[i].attribute << " " << pSA[i].color << " " << pSA[i].id << endl;
 	}
 }
 
@@ -40,11 +42,11 @@ void CreateSportAttributes(int count, SportAttribute* pSA)
 	int numb_attributes = sizeof(attributes) / sizeof(*attributes);
 	int numb_colors = sizeof(colors) / sizeof(*colors);
 
-	for (int i = 0; i < count; i++) 
+	for (int i = 0; i < count; i++)
 	{
-		pSA[i].attribute = attributes[rand() % numb_attributes];
-		pSA[i].color = colors[rand() % numb_colors];
-		pSA[i].id = rand() % MAX_ID;	
+		pSA[i].attribute = (char*)attributes[rand() % numb_attributes];
+		pSA[i].color = (char*)colors[rand() % numb_colors];
+		pSA[i].id = rand() % MAX_ID;
 	}
 }
 
@@ -53,9 +55,9 @@ int SaveInFileSportAttributes(int a, int b, SportAttribute* pSA)
 	FILE *fp;
 	char name[] = "SportAttributes.txt";
 	fp = fopen(name, "w");
-	if ( fp == NULL) { return -1; }
+	if (fp == NULL) { return -1; }
 
-	for (int i = a; i <= b; i++) 
+	for (int i = a; i <= b; i++)
 	{
 		fprintf(fp, "%s %s %d\n", pSA[i].attribute, pSA[i].color, pSA[i].id);
 	}
@@ -68,28 +70,31 @@ int LoadFromFileSportAttributes(int a, int b, SportAttribute* pSA)
 	char name[] = "SportAttributes.txt";
 	fp = fopen(name, "r");
 	if (fp == NULL) { return -1; }
-	
-	char tmp_s1[50], tmp_s2[50];
+
 	int tmp_id = 0;
 
-	for (int i = 0; i < a && !feof(fp); i++)
-	{
-		fscanf(fp, "%s%s%d", tmp_s1, tmp_s2, tmp_id);
-		fscanf(fp, "%*c"); /* удаление возврата каретки из потока ввода */
-	}
+	//for (int i = 0; i < a && !feof(fp); i++)
+	//{
+	//	const char* tmp_s1[50], tmp_s2[50];
+	//	fscanf(fp, "%s%s%d", tmp_s1, tmp_s2, &tmp_id);
+	//	fscanf(fp, "%*c"); /* удаление возврата каретки из потока ввода */
+	//}
 
-	
+
 
 	for (int i = a; i <= b && !feof(fp); i++)
 	{
-		fscanf(fp, "%s%s%d", tmp_s1, tmp_s2, tmp_id);
+		char tmp_s1[50];
+		char tmp_s2[50];
+		fscanf(fp, "%s%s%d", tmp_s1, tmp_s2, &tmp_id);
 		fscanf(fp, "%*c"); /* удаление возврата каретки из потока ввода */
-
-		pSA[i - a].attribute = tmp_s1;
-		pSA[i - a].color = tmp_s2;
+		const char * ptmp_s1 = &tmp_s1[0];
+		const char * ptmp_s2 = &tmp_s2[0];
+		strcpy(pSA[i - a].attribute, ptmp_s1);
+		strcpy(pSA[i - a].color, ptmp_s2);
 		pSA[i - a].id = tmp_id;
-		
-		cout << i << " " << pSA[i-a].attribute << " " << pSA[i-a].color << " " << pSA[i-a].id << endl;
+
+		cout << i << " " << pSA[i - a].attribute << " " << pSA[i - a].color << " " << pSA[i - a].id << endl;
 	}
 	fclose(fp);
 }
@@ -110,27 +115,30 @@ int main()
 	if (pSA == NULL || pCount == NULL)
 	{
 		cerr << "Error. Memory no allocate!" << endl;
+		system("pause");
 		return -1;
 	}
 
 	cout << "Total number of sport attributes: " << CNT << endl << endl;
 
 	CreateSportAttributes(CNT, pSA);
-	
-	/*if (SaveInFileSportAttributes(0, CNT - 1, pSA) == -1)
-	{
-		cerr << "Error. SaveInFileSportAttributes - File not open";
-		return -1;
-	}*/
+
+	//if (SaveInFileSportAttributes(0, CNT - 1, pSA) == -1)
+	//{
+	//cerr << "Error. SaveInFileSportAttributes - File not open" << endl;
+	//system("pause");
+	//return -1;
+	//}
 
 	if (LoadFromFileSportAttributes(0, CNT - 1, pSA) == -1)
 	{
-		cerr << "Error. LoadFromFileSportAttributes - File not open";
+		cerr << "Error. LoadFromFileSportAttributes - File not open" << endl;
+		system("pause");
 		return -1;
 	}
 
 	PrintSportAttributes(0, CNT - 1, pSA);
-		
+
 	system("pause"); return 0;
 
 	int n = 0;
